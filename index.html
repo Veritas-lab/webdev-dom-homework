@@ -5,18 +5,15 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" href="styles.css" />
   </head>
-
   <body>
     <div class="container">
-      <ul class="comments">
-        <li class="comment">
+      <ul class="comments" id="comments-list">
           <div class="comment-header">
-            <div>Глеб Фокин</div>
-            <div>12.02.22 12:18</div>
+            <div></div>
+            <div></div>
           </div>
           <div class="comment-body">
             <div class="comment-text">
-              Это будет первый комментарий на этой странице
             </div>
           </div>
           <div class="comment-footer">
@@ -28,12 +25,11 @@
         </li>
         <li class="comment">
           <div class="comment-header">
-            <div>Варвара Н.</div>
-            <div>13.02.22 19:22</div>
+            <div></div>
+            <div></div>
           </div>
           <div class="comment-body">
-            <div class="comment-text">
-              Мне нравится как оформлена эта страница! ❤
+            <div class="comment-text"> 
             </div>
           </div>
           <div class="comment-footer">
@@ -42,7 +38,7 @@
               <button class="like-button -active-like"></button>
             </div>
           </div>
-        </li>
+        </li>-->
       </ul>
       <div class="add-form">
         <input
@@ -66,13 +62,32 @@
   <script>
     "use strict";
     document.addEventListener('DOMContentLoaded', function() {
-      const commentsList = document.querySelector('.comments');
+      const commentsList = document.getElementById('comments-list');
       const addButton = document.querySelector('.add-form-button');
       const nameInput = document.querySelector('.add-form-name');
       const textInput = document.querySelector('.add-form-text');
 
-      //Счетчик кликов
-      let clickCounter = '0';
+      let comments = [
+        {id: 1,
+          name: "Глеб Фокин",
+          date: "12.02.22 12:18",
+          text: " Это будет первый комментарий на этой странице",
+          likes: 3,
+          isLiked: false
+        },
+
+        {
+          id: 2,
+          name: "Варвара Н.",
+          date: "13.02.22 19:22",
+          text: " Мне нравится как оформлена эта страница! ❤",
+          likes: 75,
+          isLiked: true
+        } 
+      ];
+
+      // Счетчик лайков для консоли
+      let likesCounter = 0;
 
       //Функция для форматирования даты в формат DD.MM.YY HH:MM
       function formatDate(date) {
@@ -85,41 +100,70 @@
         return `${day}.${month}.${year} ${hours}:${minutes}`;
       }
 
-      //Функция для создания нового комментария
-      function createComment(name, text) {
-        const now = new Date();
-        const dateStr = formatDate(now);
+      //Функция рендера комментариев
+      function renderComments() {
+        commentsList.innerHTML = '';
+        comments.forEach(comment => {
+          const commentElement = document.createElement('li');
+          commentElement.classList.add('comment');
 
-        const commentElement = document.createElement('li');
-        commentElement.classList.add('comment')
+          //Определяем класс для кнопки лайк на основе свойства isLiked
+          const likeButtonClass = comment.isLiked ? 'like-button -active-like' : 'like-button';
 
-        commentElement.innerHTML = `
-        <div class="comment-header"> 
-          <div>${name}</div>
-          <div>${dateStr}</div>
-          </div>
-          <div class="comment-body">
+          commentElement.innerHTML = `
+          <div class="comment-header"> 
+            <div>${comment.name}</div>
+            <div>${comment.date}</div>
+            </div>
+            <div class="comment-body">
             <div class="comment-text">
-              ${text}
+              ${comment.text}
               </div>
               </div>
               <div class="comment-footer">
                 <div class="likes">
-                  <span class="likes-counter">0</span>
-                  <button class="like-button"></button>
-                  </div>
+                  <span class="likes-counter">${comment.likes}</span>
+                  <button class="${likeButtonClass}" data-id="${comment.id}"></button>
+                   </div>
                   </div>`;
 
-                  return commentElement
+                  commentsList.appendChild(commentElement);
+        });
+
+        //Обработчики событий для кнопок лайков
+        document.querySelectorAll('.like-button').forEach(button => {
+          button.addEventListener('click', handleLikeClick)
+        });
       }
 
+      //Обработчик клика на лайк
+      function handleLikeClick(event) {
+        const commentId = parseInt(event.target.dataset.id);
+        const comment = comments.find(c => c.id === commentId);
+
+        if (comment) {
+          if (comment.isLiked) {
+            comment.likes--;
+            likesCounter--;
+          } else {
+            comment.likes++;
+            likesCounter++;
+          }
+          comment.isLiked = !comment.isLiked;
+
+          console.log(`Общее количество лайков: ${likesCounter}`);
+          console.log(`Лайков у комментария ${comment.id}: ${comment.likes}`);
+
+          //Перерендериваем комментарии
+          renderComments();
+        }
+      }
+    
       //Обработчик клика на кнопку "Добавить"
       addButton.addEventListener('click', function(){
-        clickCounter++;
-        console.log(`Кнопка "Добавить" нажата ${clickCounter} раз(а)`);
         const name = nameInput.value.trim();
         const text = textInput.value.trim();
-        
+
         //Валидация
         if(!name) {
           alert('Пожалуйста, введите ваше имя');
@@ -132,14 +176,28 @@
         }
 
         //Создаем и добавляем новый комментарий
-        const newComment = createComment(name, text);
-        commentsList.appendChild(newComment);
+        const newComment = {
+          id: Date.now(), //Используем timestamp как уникальный ID
+          name: name,
+          date: formatDate(new Date()),
+          text: text,
+          likes: 0,
+          isLiked: false
+        }
+        
+        //Добавляем в массив 
+        comments.push(newComment);
+        renderComments();
 
         //Очищаем поля ввода
         nameInput.value = '';
         textInput.value = ''; 
       })
-    })
+
+      //Первоначальный рендер комментариев
+      renderComments();
+    });
+
     console.log("It works!");
   </script>
 </html>
