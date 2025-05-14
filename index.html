@@ -86,8 +86,16 @@
         } 
       ];
 
-      // Счетчик лайков для консоли
-      let likesCounter = 0;
+      //Функция для экранирования HTML
+      function escapeHtml(unsafe) {
+        if (!unsafe) return unsafe;
+        return unsafe
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+      }
 
       //Функция для форматирования даты в формат DD.MM.YY HH:MM
       function formatDate(date) {
@@ -106,18 +114,19 @@
         comments.forEach(comment => {
           const commentElement = document.createElement('li');
           commentElement.classList.add('comment');
+          commentElement.dataset.id = comment.id;
 
           //Определяем класс для кнопки лайк на основе свойства isLiked
           const likeButtonClass = comment.isLiked ? 'like-button -active-like' : 'like-button';
 
           commentElement.innerHTML = `
           <div class="comment-header"> 
-            <div>${comment.name}</div>
+            <div>${escapeHtml(comment.name)}</div>
             <div>${comment.date}</div>
             </div>
             <div class="comment-body">
             <div class="comment-text">
-              ${comment.text}
+              ${escapeHtml(comment.text)}
               </div>
               </div>
               <div class="comment-footer">
@@ -130,9 +139,24 @@
                   commentsList.appendChild(commentElement);
         });
 
-        //Обработчики событий для кнопок лайков
+        // Обработчики кликов на комментарии
+        document.querySelectorAll('.comment').forEach(commentElement => {
+          commentElement.addEventListener('click', function(event) {
+            const commentId = parseInt(commentElement.dataset.id);
+            const comment = comments.find(c => c.id === commentId);
+            if (comment) {
+              textInput.value = `> ${comment.name}: ${comment.text}\n`;
+              textInput.focus();
+            }
+          });
+        });
+
+        //Обработчики событий для кнопок лайков с остановкой всплытия
         document.querySelectorAll('.like-button').forEach(button => {
-          button.addEventListener('click', handleLikeClick)
+          button.addEventListener('click', function(event) {
+            event.stopPropagation();
+            handleLikeClick(event);
+          });
         });
       }
 
@@ -142,19 +166,8 @@
         const comment = comments.find(c => c.id === commentId);
 
         if (comment) {
-          if (comment.isLiked) {
-            comment.likes--;
-            likesCounter--;
-          } else {
-            comment.likes++;
-            likesCounter++;
-          }
           comment.isLiked = !comment.isLiked;
-
-          console.log(`Общее количество лайков: ${likesCounter}`);
-          console.log(`Лайков у комментария ${comment.id}: ${comment.likes}`);
-
-          //Перерендериваем комментарии
+          comment.likes += comment.isLiked ? 1 : -1;
           renderComments();
         }
       }
