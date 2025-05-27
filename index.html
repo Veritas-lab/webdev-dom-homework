@@ -67,24 +67,70 @@
       const nameInput = document.querySelector('.add-form-name');
       const textInput = document.querySelector('.add-form-text');
 
-      let comments = [
-        {id: 1,
-          name: "Глеб Фокин",
-          date: "12.02.22 12:18",
-          text: " Это будет первый комментарий на этой странице",
-          likes: 3,
-          isLiked: false
-        },
+      const API_URL = "https://wedev-api.sky.pro/api/v1/vera-pershina/comments";
 
-        {
-          id: 2,
-          name: "Варвара Н.",
-          date: "13.02.22 19:22",
-          text: " Мне нравится как оформлена эта страница! ❤",
-          likes: 75,
-          isLiked: true
-        } 
-      ];
+      let comments = [];
+      let isLoading = false;
+
+      //Функция для получения комментариев из API
+
+      async function fetchComments() { 
+        try {
+          isLoading = true;
+          const response = await fetch(API_URL);
+          if (!response.ok) {
+            throw new Error('Ошибка при загрузке комментариев');
+          }
+          const data = await response.json();
+          comments = data.comments.map(comment => ({
+          id: comment.id,
+          name: comment.author.name, // Обратите внимание на author.name
+          date: new Date(comment.date).toLocaleDateString('ru-RU', {
+          day: '2-digit',
+          month: '2-digit',
+          year: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+          }).replace(',', ''),
+          text: comment.text,
+          likes: comment.likes,
+          isLiked: false
+          }));
+
+          renderComments();
+        } catch (error) {
+          console.error('Ошибка:', error);
+          alert('Не удалось загрузить комментарии. Пожалуйста, попробуйте позже.');
+        } finally {
+          isLoading = false;
+        }
+      }
+
+      // Функция для добавления комментария через API
+      async function addCommentToAPI(name, text) {
+        try {
+          if (name.length < 3 || text.length < 3) {
+          throw new Error('Имя и текст должны быть не короче 3 символов');
+          }
+          const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+          text: text,
+          name: name,
+          }),
+          });
+          
+          if (!response.ok) {
+          // Обрабатываем ошибки API согласно документации
+          throw new Error(data.error || 'Ошибка сервера');
+          }
+
+          await fetchComments(); // Обновляем список после успешного добавления
+          } catch (error) {
+          console.error('Ошибка:', error);
+          alert(error.message); // Показываем человекочитаемое сообщение
+          }
+          }
 
       //Функция для экранирования HTML
       function escapeHtml(unsafe) {
@@ -188,29 +234,17 @@
           return;
         }
 
-        //Создаем и добавляем новый комментарий
-        const newComment = {
-          id: Date.now(), //Используем timestamp как уникальный ID
-          name: name,
-          date: formatDate(new Date()),
-          text: text,
-          likes: 0,
-          isLiked: false
-        }
-        
-        //Добавляем в массив 
-        comments.push(newComment);
-        renderComments();
+     // Добавляем комментарий через API
+     addCommentToAPI(name, text);
 
-        //Очищаем поля ввода
-        nameInput.value = '';
+      //Очищаем поля ввода
+      nameInput.value = '';
         textInput.value = ''; 
       })
 
-      //Первоначальный рендер комментариев
-      renderComments();
+      // Первоначальная загрузка комментариев
+      fetchComments();
     });
 
-    console.log("It works!");
   </script>
 </html>
