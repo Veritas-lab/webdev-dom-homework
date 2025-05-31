@@ -99,52 +99,48 @@
             }
 
             function addCommentToAPI(name, text) {
-          if (isLoading) {
+            if (isLoading) {
             return Promise.reject('Пожалуйста, подождите завершения текущей операции');
-          }
-          
-          if (name.length < 3 || text.length < 3) {
-            return Promise.reject('Имя и текст должны быть не короче 3 символов');
-          }
+            }
+    
+           if (name.length < 3 || text.length < 3) {
+           return Promise.reject('Имя и текст должны быть не короче 3 символов');
+           }
 
-          addFormLoading.style.display = 'block';
           addFormLoading.classList.remove('hidden');
-
-          addButton.disabled = true;
           addFormContent.classList.add('hidden');
-          addFormLoading.classList.remove('hidden');
+          addButton.disabled = true;
           isLoading = true;
 
           return fetch(API_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-              text: text,
-              name: name,
-            }),
+          method: 'POST',
+          body: JSON.stringify({
+          text: text,
+          name: name,
+          }),
           })
-
           .then(function(response) {
-              if (!response.ok) {
-                return response.json().then(function(errData) {
-                  throw new Error(errData.error || 'Ошибка сервера');
-                });
-              }
-              return response.json();
-            })
-            .then(function() {
-              return fetchComments();
-            })
-            .catch(function(error) {
-              console.error('Ошибка:', error);
-              alert(error.message);
-              throw error;
-            })
-            .finally(function() {
-              addButton.disabled = false;
-              addFormContent.classList.remove('hidden');
-              addFormLoading.classList.add('hidden');
-              isLoading = false;
+           if (!response.ok) {
+            return response.json().then(function(errData) {
+                throw new Error(errData.error || 'Ошибка сервера');
             });
+            }
+          return response.json();
+          })
+          .then(function() {
+          return fetchComments();
+        })
+        .catch(function(error) {
+        console.error('Ошибка:', error);
+        alert(error.message);
+        throw error;
+        })
+        .finally(function() {
+          addFormLoading.classList.add('hidden');
+        addFormContent.classList.remove('hidden');
+        addButton.disabled = false;
+        isLoading = false;
+        });
         }
 
       //Функция для экранирования HTML
