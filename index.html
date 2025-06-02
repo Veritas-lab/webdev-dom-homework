@@ -46,6 +46,7 @@
 
       let comments = [];
       let isLoading = false;
+      let isFirstLoad = true;
 
       function delay(interval = 300) {
       return new Promise((resolve) => {
@@ -57,8 +58,10 @@
 
       //Функция для получения комментариев из API
       function fetchComments() {
-          commentsLoading.style.display = 'block';
-          commentsLoadingText.style.display = 'block';
+          if (isFirstLoad) {
+            commentsLoading.style.display = 'block';
+            commentsLoadingText.style.display = 'block';
+          }
           isLoading = true;
 
           return fetch(API_URL)
@@ -91,9 +94,13 @@
               console.error('Ошибка:', error);
               alert('Не удалось загрузить комментарии. Пожалуйста, попробуйте позже.');
             })
+
             .finally(() => {
-              commentsLoading.style.display = 'none';
-              commentsLoadingText.style.display = 'none';
+              if (isFirstLoad) {
+                commentsLoading.style.display = 'none';
+                commentsLoadingText.style.display = 'none';
+                isFirstLoad = false;
+              }
               isLoading = false;
               });
             }
@@ -103,8 +110,12 @@
             return Promise.reject('Пожалуйста, подождите завершения текущей операции');
             }
     
-           if (name.length < 3 || text.length < 3) {
-           return Promise.reject('Имя и текст должны быть не короче 3 символов');
+            if (name.length < 3) {
+           return Promise.reject('Имя должно быть не короче 3 символов');
+           }
+    
+           if (text.length < 3) {
+           return Promise.reject('Текст комментария должен быть не короче 3 символов');
            }
 
           addFormLoading.classList.remove('hidden');
@@ -119,6 +130,7 @@
           name: name,
           }),
           })
+
           .then(function(response) {
            if (!response.ok) {
             return response.json().then(function(errData) {
@@ -130,13 +142,9 @@
           .then(function() {
           return fetchComments();
         })
-        .catch(function(error) {
-        console.error('Ошибка:', error);
-        alert(error.message);
-        throw error;
-        })
+
         .finally(function() {
-          addFormLoading.classList.add('hidden');
+        addFormLoading.classList.add('hidden');
         addFormContent.classList.remove('hidden');
         addButton.disabled = false;
         isLoading = false;
@@ -241,10 +249,11 @@
               nameInput.value = '';
               textInput.value = '';
             })
-            .catch(function() {
-              // Ошибка уже обработана в addCommentToAPI
+
+            .catch(function(error) {
+            alert(error.message); 
             });
-        });
+            });
 
         fetchComments();
       });
