@@ -1,7 +1,8 @@
 import { fetchComments } from "./api.js";
 import { updateComments } from "./comments.js";
-import { initAddCommentListener} from "./initListeners.js";
 import { renderComments } from "./renderComments.js";
+
+renderComments();
 
 const commentsLoading = document.getElementById('comments-loading');
 const commentsLoadingText = document.getElementById('comments-loading-text');
@@ -29,4 +30,3 @@ fetchComments().then(data => {
   commentsLoadingText.style.display = 'none';
 });
 
-initAddCommentListener(renderComments)
