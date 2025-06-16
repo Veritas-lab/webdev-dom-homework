@@ -1,3 +1,7 @@
+import { fetchAndRenderComments } from '../index.js'
+import { login, setName, setToken } from './api.js'
+import { renderRegistration } from './renderRegistration.js'
+
 export const renderLogin = () => {
     const container = document.querySelector(".container")
 
@@ -12,11 +16,11 @@ export const renderLogin = () => {
          required
        />
        <input
-         type="text"
+         type="password"
          class="add-form-name"
          placeholder="Введите пароль"
-         id="password"
-         required
+        id="password"
+        required
        ></input>
        <fieldset class="add-form-registry">
          <button class="add-form-button-main button-main" type="submit" >
@@ -29,6 +33,10 @@ export const renderLogin = () => {
     `
 
     container.innerHTML = LoginHtml
+
+    document.querySelector(".registry").addEventListener('click', () => {
+      renderRegistration()
+  })
 
     const loginEl = document.querySelector('#login')
     const passwordEl = document.querySelector('#password')
@@ -45,8 +53,4 @@ export const renderLogin = () => {
                 fetchAndRenderComments()
             })
     })
-
-    document.querySelector('.registry').addEventListener('click', () => {
-        renderRegistration()
-    })
-}
+  }
