@@ -51,7 +51,7 @@ export const renderRegistration = () => {
     const submitButtonEl = document.querySelector('.button-main')
 
     submitButtonEl.addEventListener('click', () => {
-      registration(nameEl.value, loginEl.value, passwordEl.value)
+        registration(nameEl.value, loginEl.value, passwordEl.value).then(
           .then((data) => {  
               setToken(data.user.token)
               setName(data.user.name)
