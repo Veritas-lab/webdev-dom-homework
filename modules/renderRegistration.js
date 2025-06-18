@@ -41,7 +41,7 @@ export const renderRegistration = () => {
 
     container.innerHTML = registryHtml
 
-    document.querySelector(".entry").addEventListener('click', () => {
+    document.querySelector('.entry').addEventListener('click', () => {
         renderLogin()
     })
 
@@ -51,11 +51,14 @@ export const renderRegistration = () => {
     const submitButtonEl = document.querySelector('.button-main')
 
     submitButtonEl.addEventListener('click', () => {
-      registration(nameEl.value, loginEl.value, passwordEl.value)
-          .then((data) => {  
-              setToken(data.user.token)
-              setName(data.user.name)
-              fetchAndRenderComments()
-          })
-  })
+        registration(nameEl.value, loginEl.value, passwordEl.value)
+            .then((response) => {
+                return response.json()
+            })
+            .then((data) => {
+                setToken(data.user.token)
+                setName(data.user.name)
+                fetchAndRenderComments()
+            })
+    })
 }
