@@ -1,10 +1,16 @@
-import { comments } from "./comments.js";
-import { initLikeListeners, initReplyListeners } from "./initListeners.js";
+import { name, token } from './api.js'
+import { comments } from './comments.js'
+import {
+    initAddCommentListener,
+    initLikeListeners,
+    initReplyListeners,
+} from './initListeners.js'
+import { renderLogin } from './renderLogin.js'
 
 export const renderComments = () => {
-  const list = document.querySelector(".comments");
+  const container = document.querySelector(".container");
 
-  list.innerHTML = comments
+  const commentsHtml = comments
     .map((comment, index) => {
       return `
       <li class="comment" data-index="${index}">
@@ -25,11 +31,55 @@ export const renderComments = () => {
             }"></button>
           </div>
         </div>
-      </li>`;
+      </li>`
     })
     .join("");
 
-    initLikeListeners(renderComments);
-    initReplyListeners();
+    const addCommentHtml = `
+    <div class="add-form">
+      <input 
+        type="text" 
+        class="add-form-name" 
+        placeholder="Введите ваше имя" 
+        id="name-input"
+        value="${name}"
+        readonly
+      />
+      <textarea 
+        class="add-form-text" 
+        placeholder="Введите ваш комментарий" 
+        rows="4" 
+        id="text-input"
+      ></textarea>
+      <div class="add-form-row">
+        <button class="add-form-button">Добавить</button>
+      </div>
+    </div>
+    <div class="form-loading" style="display: none;">
+      <div class="loader"></div>
+    </div>
+    <div id="add-form-loading" class="loading-text" style="display: none;">
+      Комментарий добавляется...
+    </div>`
+    
+     const linkToLoginText = `<p>чтобы отправить комментарий, <span class="link-login">войдите</span></p>`
 
-};
+
+    const baseHtml = `
+        <ul class="comments">${commentsHtml}</ul>
+        ${token ? addCommentHtml : linkToLoginText}`
+
+    container.innerHTML = baseHtml
+
+    initLikeListeners(renderComments)
+
+    if (token) {
+  
+        initReplyListeners()
+        initAddCommentListener(renderComments)
+    } else {
+        document.querySelector('.link-login').addEventListener('click', () => {
+            renderLogin()
+        })
+    }
+}
